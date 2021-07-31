@@ -5,10 +5,15 @@ import numpy as np
 
 class WindowCapture:
 
-    def __init__(self, window_name) -> None:
-        self.hwnd = win32gui.FindWindow(None, window_name)
-        if not self.hwnd:
-            raise Exception('Window not found: {}'.format(window_name))
+    def __init__(self, window_name=None) -> None:
+
+        if window_name is None:
+            self.hwnd = win32gui.GetDesktopWindow()
+        else:
+            self.hwnd = win32gui.FindWindow(None, window_name)
+            if not self.hwnd:
+                raise Exception('Window not found: {}'.format(window_name))
+            
         
         window_rect = win32gui.GetWindowRect(self.hwnd)
         self.w = window_rect[2] - window_rect[0]
@@ -20,6 +25,13 @@ class WindowCapture:
         self.h = self.h - titlebar_pixels - border_pixels
         self.cropped_x = border_pixels
         self.cropped_y = titlebar_pixels
+
+    def list_windows_names(self):
+        def winEnumHandler(hwnd, ctx):
+            if win32gui.IsWindowVisible(hwnd):
+                print(hex(hwnd), win32gui.GetWindowText(hwnd))
+
+        win32gui.EnumWindows(winEnumHandler, None)
 
     
     def get_screenshot(self):
